@@ -1,4 +1,2 @@
-*.csv
-
- filter=lfs diff=lfs merge=lfs -text
+data/TCGA-STAD_gene_expression_cpm.csv.rds filter=lfs diff=lfs merge=lfs -text
 *TCGA-STAD_gene_expression_cpm.csv filter=lfs diff=lfs merge=lfs -text
