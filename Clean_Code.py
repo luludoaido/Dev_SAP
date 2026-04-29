@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -14,11 +16,25 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 
-expression_df = pd.read_csv("/Users/luanadoaido/ZHAW/HS25/Track1/Mini Project/Track/Trackmodule_1_RF_TCGA-STAD/data/TCGA-STAD_gene_expression_cpm.csv", index_col=0)
+BASE_DIR = Path(
+    "/Users/luanadoaido/ZHAW/HS25/Track1/Mini Project/Track/Trackmodule_1_RF_TCGA-STAD"
+)
+EXPRESSION_FILE = BASE_DIR / "data" / "TCGA-STAD_gene_expression_cpm.csv"
+SUBTYPE_FILE = BASE_DIR / "TCGA-STAD_subtypes.csv"
+
+TRAIN_SIZE = 0.7
+TRAIN_TEST_RANDOM_STATE = 1
+MODEL_RANDOM_STATE = 42
+MIN_NON_ZERO_FRACTION = 0.1
+VARIANCE_THRESHOLD = 0.01
+TOP_FEATURE_COUNT = 20
+TOP_IMPORTANCE_COUNT = 10
+
+expression_df = pd.read_csv(EXPRESSION_FILE, index_col=0)
 # 431 rows und 60616 columns
 print("Data shape Gene Expression:", expression_df.shape)
 
-subtype_df = pd.read_csv("/Users/luanadoaido/ZHAW/HS25/Track1/Mini Project/Track/Trackmodule_1_RF_TCGA-STAD/TCGA-STAD_subtypes.csv", index_col=0)
+subtype_df = pd.read_csv(SUBTYPE_FILE, index_col=0)
 print("Data shape Subtypes:", subtype_df.shape)
 # 411 rows und 4 columns
 
@@ -130,7 +146,7 @@ plt.show()
 
 #heatmap with variance for multi
 var_multi = X_multi.var()
-top20_var = var_multi.sort_values(ascending=False).head(20)
+top20_var = var_multi.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
 feat_top = top20_var.index
 
 #correlation Heatmap
@@ -142,7 +158,7 @@ plt.show()
 
 #heatmap with variance for multi
 var_binary = X_binary.var()
-top20_var_bin = var_binary.sort_values(ascending=False).head(20)
+top20_var_bin = var_binary.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
 feat_top_bin = top20_var_bin.index
 
 #correlation Heatmap
@@ -153,10 +169,10 @@ plt.title("Correlation heatmap (top Features - Binary)")
 plt.show()
 
 #for multi class approach
-train_X_multi, test_X_multi, train_y_multi, test_y_multi = train_test_split(X_multi, y_multi, train_size= 0.7, random_state=1)
+train_X_multi, test_X_multi, train_y_multi, test_y_multi = train_test_split(X_multi, y_multi, train_size= TRAIN_SIZE, random_state=TRAIN_TEST_RANDOM_STATE)
 
 #for binary approach
-train_X_binary, test_X_binary, train_y_binary, test_y_binary = train_test_split(X_binary, y_binary, train_size= 0.7, random_state=1)
+train_X_binary, test_X_binary, train_y_binary, test_y_binary = train_test_split(X_binary, y_binary, train_size= TRAIN_SIZE, random_state=TRAIN_TEST_RANDOM_STATE)
 
 
 #testing if the target value in the testing and training set is balanced
@@ -174,7 +190,7 @@ print("train:", train_y_binary.value_counts(normalize=True) * 100)
 print("\ntest:", test_y_binary.value_counts(normalize=True) * 100)
 
 #for Multiclass Target - filter machen
-min_samples_multi = int(0.1 *train_X_multi.shape[0])
+min_samples_multi = int(MIN_NON_ZERO_FRACTION *train_X_multi.shape[0])
 
 #das eigentliche
 mask_multi = (train_X_multi > 0).sum(axis=0) >= min_samples_multi
@@ -184,7 +200,7 @@ X_train_multi_filt = train_X_multi.loc[:, mask_multi]
 X_test_multi_filt = test_X_multi.loc[:, mask_multi]
 
 #for Binary Target - filter machen
-min_samples_binary = int(0.1 *train_X_binary.shape[0])
+min_samples_binary = int(MIN_NON_ZERO_FRACTION *train_X_binary.shape[0])
 
 #das eigentliche
 mask_binary = (train_X_binary > 0).sum(axis=0) >= min_samples_binary
@@ -194,7 +210,7 @@ X_train_binary_filt = train_X_binary.loc[:, mask_binary]
 X_test_binary_filt = test_X_binary.loc[:, mask_binary]
 
 
-vt_multi = VarianceThreshold(threshold=0.01)
+vt_multi = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
 vt_multi.fit(X_train_multi_filt)
 
 selected_genes_multi = X_train_multi_filt.columns[vt_multi.get_support()]
@@ -203,7 +219,7 @@ X_train_var_multi = X_train_multi_filt[selected_genes_multi]
 X_test_var_multi  = X_test_multi_filt[selected_genes_multi]
 
 
-vt_binary = VarianceThreshold(threshold=0.01)
+vt_binary = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
 vt_binary.fit(X_train_binary_filt)
 
 selected_genes_binary = X_train_binary_filt.columns[vt_binary.get_support()]
@@ -226,7 +242,7 @@ param_grid_multi = {
     "min_samples_leaf": [1,2,5, 10]
 }
 
-rf_multi = RandomForestClassifier(random_state=42)
+rf_multi = RandomForestClassifier(random_state=MODEL_RANDOM_STATE)
 grid_mulit = GridSearchCV(rf_multi, param_grid_multi, cv=3, scoring="f1_macro")
 grid_mulit.fit(X_train_var_multi , train_y_multi)
 
@@ -242,19 +258,19 @@ param_grid_binary = {
     "min_samples_leaf": [1,2,5, 10]
 }
 
-rf_binary = RandomForestClassifier(random_state=42)
+rf_binary = RandomForestClassifier(random_state=MODEL_RANDOM_STATE)
 grid_binary = GridSearchCV(rf_binary, param_grid_binary, cv=3, scoring="f1_macro")
 grid_binary.fit(X_train_var_binary , train_y_binary)
 
 print("Best parameters:", grid_binary.best_params_)
 print("Best CV score:", grid_binary.best_score_)
 
-rfc_multi = RandomForestClassifier(n_estimators=300, bootstrap=True, min_samples_leaf= 2, max_depth=None, max_features='sqrt', criterion='gini', random_state=42)
+rfc_multi = RandomForestClassifier(n_estimators=300, bootstrap=True, min_samples_leaf= 2, max_depth=None, max_features='sqrt', criterion='gini', random_state=MODEL_RANDOM_STATE)
 rfc_multi.fit(X_train_var_multi , train_y_multi)
 
 
 
-rfc_binary = RandomForestClassifier(n_estimators=100, bootstrap=True, max_depth=None, max_features='sqrt', min_samples_leaf=10, criterion='gini', random_state=42)
+rfc_binary = RandomForestClassifier(n_estimators=100, bootstrap=True, max_depth=None, max_features='sqrt', min_samples_leaf=10, criterion='gini', random_state=MODEL_RANDOM_STATE)
 rfc_binary.fit(X_train_var_binary , train_y_binary)
 
 #Predicting
@@ -283,11 +299,11 @@ feature_importance_multi = pd.DataFrame({
     "importance": rfc_multi.feature_importances_
 }).sort_values("importance", ascending=False)
 
-top10_multi = feature_importance_multi.head(10)
+top10_multi = feature_importance_multi.head(TOP_IMPORTANCE_COUNT)
 
 # Plot feature importance
 plt.figure(figsize=(12, 8))
-sns.barplot(data=feature_importance_multi.head(10), x="importance", y="feature", orient="h")
+sns.barplot(data=feature_importance_multi.head(TOP_IMPORTANCE_COUNT), x="importance", y="feature", orient="h")
 plt.title("Top 10 Feature Importances (Multi)")
 plt.xlabel("Importance")
 plt.ylabel("Gene Expression")
@@ -358,11 +374,11 @@ feature_importance_binary = pd.DataFrame({
 }).sort_values("importance", ascending=False)
 
 
-top10_binary = feature_importance_binary.head(10)
+top10_binary = feature_importance_binary.head(TOP_IMPORTANCE_COUNT)
 
 # Plot feature importance
 plt.figure(figsize=(12, 8))
-sns.barplot(data=feature_importance_binary.head(10), x="importance", y="feature", orient="h")
+sns.barplot(data=feature_importance_binary.head(TOP_IMPORTANCE_COUNT), x="importance", y="feature", orient="h")
 plt.title("Top 10 Feature Importances (Binary)")
 plt.xlabel("Importance")
 plt.ylabel("Gene Expression")
