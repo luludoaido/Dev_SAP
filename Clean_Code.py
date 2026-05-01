@@ -39,12 +39,12 @@ print("Data shape Subtypes:", subtype_df.shape)
 
 
 # Check overlap between expression and subtype sample IDs.
-expr_ids = set(expression_df.index)
-label_ids = set(subtype_df.index)
+expression_ids = set(expression_df.index)
+subtype_ids = set(subtype_df.index)
 
-print(len(expr_ids))
-print(len(label_ids))
-print(len(expr_ids & label_ids))
+print(len(expression_ids))
+print(len(subtype_ids))
+print(len(expression_ids & subtype_ids))
 
 
 # Keep only samples that have both subtype labels and expression data.
@@ -119,10 +119,10 @@ scaler = StandardScaler()
 X_scaled_multi = scaler.fit_transform(X_multi)
 
 pca = PCA(n_components=2)
-x_pca = pca.fit_transform(X_scaled_multi)
+X_pca_multi = pca.fit_transform(X_scaled_multi)
 
 plt.figure()
-sns.scatterplot(x = x_pca[:,0], y= x_pca[:,1], hue = y_multi)
+sns.scatterplot(x = X_pca_multi[:,0], y= X_pca_multi[:,1], hue = y_multi)
 plt.title("PCA - CMS classes (Multi class)")
 plt.xlabel("PC1")
 plt.ylabel("PC2")
@@ -134,35 +134,35 @@ scaler = StandardScaler()
 X_scaled_binary = scaler.fit_transform(X_binary)
 
 pca = PCA(n_components=2)
-x_pca_binary = pca.fit_transform(X_scaled_binary)
+X_pca_binary = pca.fit_transform(X_scaled_binary)
 
 plt.figure()
-sns.scatterplot(x = x_pca_binary[:,0], y= x_pca_binary[:,1], hue = y_binary)
+sns.scatterplot(x = X_pca_binary[:,0], y= X_pca_binary[:,1], hue = y_binary)
 plt.title("PCA - CMS classes (binary)")
 plt.xlabel("PC1")
 plt.ylabel("PC2")
 plt.show()
 
 # Plot correlations among the highest-variance features for the multiclass target.
-var_multi = X_multi.var()
-top20_var = var_multi.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
-feat_top = top20_var.index
+feature_variances_multi = X_multi.var()
+top_variance_features_multi = feature_variances_multi.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
+top_feature_names_multi = top_variance_features_multi.index
 
 
 plt.Figure(figsize=(10,8))
-corr_multi = X_multi[feat_top].corr()
+corr_multi = X_multi[top_feature_names_multi].corr()
 sns.heatmap(corr_multi, cmap = "coolwarm")
 plt.title("Correlation heatmap (top Features - Multi Class)")
 plt.show()
 
 # Plot correlations among the highest-variance features for the binary target.
-var_binary = X_binary.var()
-top20_var_bin = var_binary.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
-feat_top_bin = top20_var_bin.index
+feature_variances_binary = X_binary.var()
+top_variance_features_binary = feature_variances_binary.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
+top_feature_names_binary = top_variance_features_binary.index
 
 
 plt.Figure(figsize=(10,8))
-corr_binary = X_binary[feat_top_bin].corr()
+corr_binary = X_binary[top_feature_names_binary].corr()
 sns.heatmap(corr_binary, cmap = "coolwarm")
 plt.title("Correlation heatmap (top Features - Binary)")
 plt.show()
@@ -189,24 +189,24 @@ print("train:", train_y_binary.value_counts(normalize=True) * 100)
 print("\ntest:", test_y_binary.value_counts(normalize=True) * 100)
 
 # Keep genes expressed in at least the configured minimum fraction of training samples for the multiclass model.
-min_samples_multi = int(MIN_NON_ZERO_FRACTION *train_X_multi.shape[0])
+min_expressed_samples_multi = int(MIN_NON_ZERO_FRACTION *train_X_multi.shape[0])
 
 
-mask_multi = (train_X_multi > 0).sum(axis=0) >= min_samples_multi
+expressed_genes_mask_multi = (train_X_multi > 0).sum(axis=0) >= min_expressed_samples_multi
 
 
-X_train_multi_filt = train_X_multi.loc[:, mask_multi]
-X_test_multi_filt = test_X_multi.loc[:, mask_multi]
+X_train_multi_filt = train_X_multi.loc[:, expressed_genes_mask_multi]
+X_test_multi_filt = test_X_multi.loc[:, expressed_genes_mask_multi]
 
 # Keep genes expressed in at least the configured minimum fraction of training samples for the binary model.
-min_samples_binary = int(MIN_NON_ZERO_FRACTION *train_X_binary.shape[0])
+min_expressed_samples_binary = int(MIN_NON_ZERO_FRACTION *train_X_binary.shape[0])
 
 
-mask_binary = (train_X_binary > 0).sum(axis=0) >= min_samples_binary
+expressed_genes_mask_binary = (train_X_binary > 0).sum(axis=0) >= min_expressed_samples_binary
 
 
-X_train_binary_filt = train_X_binary.loc[:, mask_binary]
-X_test_binary_filt = test_X_binary.loc[:, mask_binary]
+X_train_binary_filt = train_X_binary.loc[:, expressed_genes_mask_binary]
+X_test_binary_filt = test_X_binary.loc[:, expressed_genes_mask_binary]
 
 
 vt_multi = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
@@ -242,11 +242,11 @@ param_grid_multi = {
 }
 
 rf_multi = RandomForestClassifier(random_state=MODEL_RANDOM_STATE)
-grid_mulit = GridSearchCV(rf_multi, param_grid_multi, cv=3, scoring="f1_macro")
-grid_mulit.fit(X_train_var_multi , train_y_multi)
+grid_multi = GridSearchCV(rf_multi, param_grid_multi, cv=3, scoring="f1_macro")
+grid_multi.fit(X_train_var_multi , train_y_multi)
 
-print("Best parameters:", grid_mulit.best_params_)
-print("Best CV score:", grid_mulit.best_score_)
+print("Best parameters:", grid_multi.best_params_)
+print("Best CV score:", grid_multi.best_score_)
 
 
 # Tune random forest hyperparameters for the binary model.
@@ -264,28 +264,28 @@ grid_binary.fit(X_train_var_binary , train_y_binary)
 print("Best parameters:", grid_binary.best_params_)
 print("Best CV score:", grid_binary.best_score_)
 
-rfc_multi = RandomForestClassifier(n_estimators=300, bootstrap=True, min_samples_leaf= 2, max_depth=None, max_features='sqrt', criterion='gini', random_state=MODEL_RANDOM_STATE)
-rfc_multi.fit(X_train_var_multi , train_y_multi)
+rf_multi_final = RandomForestClassifier(n_estimators=300, bootstrap=True, min_samples_leaf= 2, max_depth=None, max_features='sqrt', criterion='gini', random_state=MODEL_RANDOM_STATE)
+rf_multi_final.fit(X_train_var_multi , train_y_multi)
 
 
 
-rfc_binary = RandomForestClassifier(n_estimators=100, bootstrap=True, max_depth=None, max_features='sqrt', min_samples_leaf=10, criterion='gini', random_state=MODEL_RANDOM_STATE)
-rfc_binary.fit(X_train_var_binary , train_y_binary)
+rf_binary_final = RandomForestClassifier(n_estimators=100, bootstrap=True, max_depth=None, max_features='sqrt', min_samples_leaf=10, criterion='gini', random_state=MODEL_RANDOM_STATE)
+rf_binary_final.fit(X_train_var_binary , train_y_binary)
 
 # Evaluate the final multiclass model on the test set.
-y_pred_multi = rfc_multi.predict(X_test_var_multi)
+y_pred_multi = rf_multi_final.predict(X_test_var_multi)
 
 
 print("Accuracy of multi class RF:", accuracy_score(test_y_multi, y_pred_multi))
 print(classification_report(test_y_multi, y_pred_multi))
 
 
-multi_test = confusion_matrix(test_y_multi, y_pred_multi)
+confusion_matrix_multi = confusion_matrix(test_y_multi, y_pred_multi)
 
 plt.figure(figsize=(8, 6))
-sns.heatmap(multi_test, annot=True, fmt="d", cmap='Greens',
-            xticklabels=rfc_multi.classes_,
-            yticklabels=rfc_multi.classes_)
+sns.heatmap(confusion_matrix_multi, annot=True, fmt="d", cmap='Greens',
+            xticklabels=rf_multi_final.classes_,
+            yticklabels=rf_multi_final.classes_)
 plt.title('Confusion Matrix on Test Set (Final Evaluation - Multi)')
 plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
@@ -294,7 +294,7 @@ plt.show()
 # Inspect the most important features for the multiclass model.
 feature_importance_multi = pd.DataFrame({
     "feature": X_test_var_multi.columns,
-    "importance": rfc_multi.feature_importances_
+    "importance": rf_multi_final.feature_importances_
 }).sort_values("importance", ascending=False)
 
 top10_multi = feature_importance_multi.head(TOP_IMPORTANCE_COUNT)
@@ -319,19 +319,19 @@ plt.tight_layout()
 plt.show()
 
 # Evaluate the final binary model on the test set.
-y_pred_binary = rfc_binary.predict(X_test_var_binary)
+y_pred_binary = rf_binary_final.predict(X_test_var_binary)
 
 
 print("Accuracy of Binary class RF:", accuracy_score(test_y_binary, y_pred_binary))
 print(classification_report(test_y_binary, y_pred_binary))
 
 
-binary_test = confusion_matrix(test_y_binary, y_pred_binary)
+confusion_matrix_binary = confusion_matrix(test_y_binary, y_pred_binary)
 
 plt.figure(figsize=(8, 6))
-sns.heatmap(binary_test, annot=True, fmt="d", cmap="Greens",
-            xticklabels=rfc_binary.classes_,
-            yticklabels=rfc_binary.classes_)
+sns.heatmap(confusion_matrix_binary, annot=True, fmt="d", cmap="Greens",
+            xticklabels=rf_binary_final.classes_,
+            yticklabels=rf_binary_final.classes_)
 
 
 plt.title("Confusion Matrix on Test Set (Final Evaluation - Binary)")
@@ -342,8 +342,8 @@ plt.show()
 
 
 # Compute ROC-AUC for the binary MSI model.
-test_prob_binary = rfc_binary.predict_proba(X_test_var_binary)[:,1]
-fpr_binary, tpr_binary, thresholds = roc_curve(test_y_binary, test_prob_binary, pos_label="MSI")
+test_probabilities_binary = rf_binary_final.predict_proba(X_test_var_binary)[:,1]
+fpr_binary, tpr_binary, _ = roc_curve(test_y_binary, test_probabilities_binary, pos_label="MSI")
 roc_auc_binary = auc(fpr_binary,tpr_binary)
 print("ROC-AUC Value:", roc_auc_binary)
 # Plot the ROC curve for the binary model.
@@ -366,7 +366,7 @@ plt.show()
 # Inspect the most important features for the binary model.
 feature_importance_binary = pd.DataFrame({
     "feature": X_test_var_binary.columns,
-    "importance": rfc_binary.feature_importances_
+    "importance": rf_binary_final.feature_importances_
 }).sort_values("importance", ascending=False)
 
 
