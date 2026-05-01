@@ -31,50 +31,50 @@ TOP_FEATURE_COUNT = 20
 TOP_IMPORTANCE_COUNT = 10
 
 expression_df = pd.read_csv(EXPRESSION_FILE, index_col=0)
-# 431 rows und 60616 columns
+
 print("Data shape Gene Expression:", expression_df.shape)
 
 subtype_df = pd.read_csv(SUBTYPE_FILE, index_col=0)
 print("Data shape Subtypes:", subtype_df.shape)
-# 411 rows und 4 columns
 
-#Are all ID's represented?
+
+# Check overlap between expression and subtype sample IDs.
 expr_ids = set(expression_df.index)
 label_ids = set(subtype_df.index)
 
 print(len(expr_ids))
 print(len(label_ids))
-print(len(expr_ids & label_ids))  # Overlapping samples
-# as only 411 samples overlap the merged df will be smalller
+print(len(expr_ids & label_ids))
 
-#merging
+
+# Keep only samples that have both subtype labels and expression data.
 
 cancer_df = pd.merge(subtype_df, expression_df, on="submitter_id", how="inner")
 print("Data shape whole DF:", cancer_df.shape)
-#411 rows und 60620 Columns
 
-#print(cancer_df.head(10))
 
-print("\nThere are", cancer_df.isna().sum().sum(), "Na's in the Dataframe.") #157
+
+
+print("\nThere are", cancer_df.isna().sum().sum(), "Na's in the Dataframe.")
 
 print("\nIn which features are the Na's present?\n", cancer_df.isna().sum().sort_values(ascending=False).head())
-#there are 157 na
+
 
 print("\nThere are", cancer_df.index.duplicated().sum(), "duplicated rows.")
-#no duplicated rows
-print("\nThere are", cancer_df.columns.duplicated().sum(), "duplicated Columns.")
-#no duplicated columns
 
-#cat variablen rausnehmen, verändern
+print("\nThere are", cancer_df.columns.duplicated().sum(), "duplicated Columns.")
+
+
+
 cancer_df.select_dtypes(include="object").head()
 
-#as we have two different approaches we need to make two different Datasets which we need to clean
+# Prepare separate datasets for multiclass subtype and binary MSI classification.
 df_multi = cancer_df.dropna(subset=["Molecular.Subtype"]).copy()
 
 print(df_multi["Molecular.Subtype"].value_counts())
 
 df_binary = cancer_df.dropna(subset=["MSI_phenotype"]).copy()
-
+# Combine MSI-H and MSI-L into one MSI class for binary classification.
 df_binary["MSI_binary"] = df_binary["MSI_phenotype"].replace({
     "MSI-H": "MSI",
     "MSI-L": "MSI"
@@ -82,21 +82,20 @@ df_binary["MSI_binary"] = df_binary["MSI_phenotype"].replace({
 
 print(df_binary["MSI_binary"].value_counts())
 
-#for the multi class approach
-y_multi = df_multi["Molecular.Subtype"] #Targe Value
+
+y_multi = df_multi["Molecular.Subtype"]
 X_multi = df_multi.drop(columns=df_multi.select_dtypes(include="object").columns)
 
-print(X_multi.dtypes.unique())   #should be only floeats
+print(X_multi.dtypes.unique())
 
 
-#for the binary class approach
-y_binary = df_binary["MSI_binary"] #Targen value 2
+
+y_binary = df_binary["MSI_binary"]
 X_binary = df_binary.drop(columns=df_binary.select_dtypes(include="object").columns)
 
 print(X_binary.dtypes.unique())
 
-#Class Distribution
-#multi class
+# Plot class distributions for both target definitions.
 
 plt.Figure()
 sns.countplot(x= y_multi)
@@ -105,7 +104,7 @@ plt.xlabel("CMS class")
 plt.ylabel("Number of samples")
 plt.show()
 
-#binary
+
 
 plt.Figure()
 sns.countplot(x= y_binary)
@@ -114,7 +113,7 @@ plt.xlabel("Class")
 plt.ylabel("Number of samples")
 plt.show()
 
-#PCA - Multi
+# Visualize the first two PCA components for the multiclass target.
 
 scaler = StandardScaler()
 X_scaled_multi = scaler.fit_transform(X_multi)
@@ -129,7 +128,7 @@ plt.xlabel("PC1")
 plt.ylabel("PC2")
 plt.show()
 
-#PCA - binary
+# Visualize the first two PCA components for the binary target.
 
 scaler = StandardScaler()
 X_scaled_binary = scaler.fit_transform(X_binary)
@@ -144,38 +143,38 @@ plt.xlabel("PC1")
 plt.ylabel("PC2")
 plt.show()
 
-#heatmap with variance for multi
+# Plot correlations among the highest-variance features for the multiclass target.
 var_multi = X_multi.var()
 top20_var = var_multi.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
 feat_top = top20_var.index
 
-#correlation Heatmap
+
 plt.Figure(figsize=(10,8))
 corr_multi = X_multi[feat_top].corr()
 sns.heatmap(corr_multi, cmap = "coolwarm")
 plt.title("Correlation heatmap (top Features - Multi Class)")
 plt.show()
 
-#heatmap with variance for multi
+# Plot correlations among the highest-variance features for the binary target.
 var_binary = X_binary.var()
 top20_var_bin = var_binary.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
 feat_top_bin = top20_var_bin.index
 
-#correlation Heatmap
+
 plt.Figure(figsize=(10,8))
 corr_binary = X_binary[feat_top_bin].corr()
 sns.heatmap(corr_binary, cmap = "coolwarm")
 plt.title("Correlation heatmap (top Features - Binary)")
 plt.show()
 
-#for multi class approach
+
 train_X_multi, test_X_multi, train_y_multi, test_y_multi = train_test_split(X_multi, y_multi, train_size= TRAIN_SIZE, random_state=TRAIN_TEST_RANDOM_STATE)
 
-#for binary approach
+
 train_X_binary, test_X_binary, train_y_binary, test_y_binary = train_test_split(X_binary, y_binary, train_size= TRAIN_SIZE, random_state=TRAIN_TEST_RANDOM_STATE)
 
 
-#testing if the target value in the testing and training set is balanced
+# Compare class proportions in train and test splits.
 train_y_multi = pd.Series(train_y_multi)
 test_y_multi = pd.Series(test_y_multi)
 print("\nTesting to see if the training and test set is balanced (multi):\n (Count in %)")
@@ -189,23 +188,23 @@ print("\nTesting to see if the training and test set is balanced (binary):\n (Co
 print("train:", train_y_binary.value_counts(normalize=True) * 100)
 print("\ntest:", test_y_binary.value_counts(normalize=True) * 100)
 
-#for Multiclass Target - filter machen
+# Keep genes expressed in at least the configured minimum fraction of training samples for the multiclass model.
 min_samples_multi = int(MIN_NON_ZERO_FRACTION *train_X_multi.shape[0])
 
-#das eigentliche
+
 mask_multi = (train_X_multi > 0).sum(axis=0) >= min_samples_multi
 
-#Anwenden
+
 X_train_multi_filt = train_X_multi.loc[:, mask_multi]
 X_test_multi_filt = test_X_multi.loc[:, mask_multi]
 
-#for Binary Target - filter machen
+# Keep genes expressed in at least the configured minimum fraction of training samples for the binary model.
 min_samples_binary = int(MIN_NON_ZERO_FRACTION *train_X_binary.shape[0])
 
-#das eigentliche
+
 mask_binary = (train_X_binary > 0).sum(axis=0) >= min_samples_binary
 
-#Anwenden
+
 X_train_binary_filt = train_X_binary.loc[:, mask_binary]
 X_test_binary_filt = test_X_binary.loc[:, mask_binary]
 
@@ -234,7 +233,7 @@ X_test_var_binary.shape[1])
 
 
 
-#Multi
+# Tune random forest hyperparameters for the multiclass model.
 param_grid_multi = {
     "n_estimators": [100, 300],
     "max_depth": [None, 20, 50, 100],
@@ -250,7 +249,7 @@ print("Best parameters:", grid_mulit.best_params_)
 print("Best CV score:", grid_mulit.best_score_)
 
 
-#binary
+# Tune random forest hyperparameters for the binary model.
 param_grid_binary = {
     "n_estimators": [100, 300],
     "max_depth": [None, 20, 50, 100],
@@ -273,15 +272,14 @@ rfc_multi.fit(X_train_var_multi , train_y_multi)
 rfc_binary = RandomForestClassifier(n_estimators=100, bootstrap=True, max_depth=None, max_features='sqrt', min_samples_leaf=10, criterion='gini', random_state=MODEL_RANDOM_STATE)
 rfc_binary.fit(X_train_var_binary , train_y_binary)
 
-#Predicting
+# Evaluate the final multiclass model on the test set.
 y_pred_multi = rfc_multi.predict(X_test_var_multi)
 
-#metrics
-#accuracy score
+
 print("Accuracy of multi class RF:", accuracy_score(test_y_multi, y_pred_multi))
 print(classification_report(test_y_multi, y_pred_multi))
 
-#Confusionmatrix:
+
 multi_test = confusion_matrix(test_y_multi, y_pred_multi)
 
 plt.figure(figsize=(8, 6))
@@ -293,7 +291,7 @@ plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
 plt.show()
 
-# Feature importance
+# Inspect the most important features for the multiclass model.
 feature_importance_multi = pd.DataFrame({
     "feature": X_test_var_multi.columns,
     "importance": rfc_multi.feature_importances_
@@ -301,7 +299,7 @@ feature_importance_multi = pd.DataFrame({
 
 top10_multi = feature_importance_multi.head(TOP_IMPORTANCE_COUNT)
 
-# Plot feature importance
+
 plt.figure(figsize=(12, 8))
 sns.barplot(data=feature_importance_multi.head(TOP_IMPORTANCE_COUNT), x="importance", y="feature", orient="h")
 plt.title("Top 10 Feature Importances (Multi)")
@@ -320,15 +318,14 @@ for i, (imp, feat) in enumerate(zip(top10_multi["importance"], top10_multi["feat
 plt.tight_layout()
 plt.show()
 
-#Predicting
+# Evaluate the final binary model on the test set.
 y_pred_binary = rfc_binary.predict(X_test_var_binary)
 
-#metrics
-#accuracy score
+
 print("Accuracy of Binary class RF:", accuracy_score(test_y_binary, y_pred_binary))
 print(classification_report(test_y_binary, y_pred_binary))
 
-#Confusionmatrix:
+
 binary_test = confusion_matrix(test_y_binary, y_pred_binary)
 
 plt.figure(figsize=(8, 6))
@@ -344,13 +341,12 @@ plt.show()
 
 
 
-#ROC-AUC
-#predict probabilities for MSS
-test_prob_binary = rfc_binary.predict_proba(X_test_var_binary)[:,1] #for posiive variable MSI
+# Compute ROC-AUC for the binary MSI model.
+test_prob_binary = rfc_binary.predict_proba(X_test_var_binary)[:,1]
 fpr_binary, tpr_binary, thresholds = roc_curve(test_y_binary, test_prob_binary, pos_label="MSI")
 roc_auc_binary = auc(fpr_binary,tpr_binary)
 print("ROC-AUC Value:", roc_auc_binary)
-#Roc curve visualization:
+# Plot the ROC curve for the binary model.
 
 plt.Figure(figsize=(8,6))
 plt.plot(fpr_binary,tpr_binary, color ="darkgreen", lw = 2,
@@ -367,7 +363,7 @@ plt.grid(alpha=0.3)
 plt.tight_layout()
 plt.show()
 
-# Feature importance
+# Inspect the most important features for the binary model.
 feature_importance_binary = pd.DataFrame({
     "feature": X_test_var_binary.columns,
     "importance": rfc_binary.feature_importances_
@@ -376,7 +372,7 @@ feature_importance_binary = pd.DataFrame({
 
 top10_binary = feature_importance_binary.head(TOP_IMPORTANCE_COUNT)
 
-# Plot feature importance
+
 plt.figure(figsize=(12, 8))
 sns.barplot(data=feature_importance_binary.head(TOP_IMPORTANCE_COUNT), x="importance", y="feature", orient="h")
 plt.title("Top 10 Feature Importances (Binary)")
