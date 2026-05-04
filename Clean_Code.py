@@ -30,6 +30,33 @@ VARIANCE_THRESHOLD = 0.01
 TOP_FEATURE_COUNT = 20
 TOP_IMPORTANCE_COUNT = 10
 
+RANDOM_FOREST_PARAM_GRID = {
+    "n_estimators": [100, 300],
+    "max_depth": [None, 20, 50, 100],
+    "max_features": ["sqrt"],
+    "min_samples_leaf": [1, 2, 5, 10],
+}
+
+FINAL_MULTICLASS_PARAMS = {
+    "n_estimators": 300,
+    "bootstrap": True,
+    "min_samples_leaf": 2,
+    "max_depth": None,
+    "max_features": "sqrt",
+    "criterion": "gini",
+    "random_state": MODEL_RANDOM_STATE,
+}
+
+FINAL_BINARY_PARAMS = {
+    "n_estimators": 100,
+    "bootstrap": True,
+    "max_depth": None,
+    "max_features": "sqrt",
+    "min_samples_leaf": 10,
+    "criterion": "gini",
+    "random_state": MODEL_RANDOM_STATE,
+}
+
 expression_df = pd.read_csv(EXPRESSION_FILE, index_col=0)
 
 print("Data shape Gene Expression:", expression_df.shape)
@@ -234,15 +261,8 @@ X_test_var_binary.shape[1])
 
 
 # Tune random forest hyperparameters for the multiclass model.
-param_grid_multi = {
-    "n_estimators": [100, 300],
-    "max_depth": [None, 20, 50, 100],
-    "max_features": ["sqrt"],
-    "min_samples_leaf": [1,2,5, 10]
-}
-
 rf_multi = RandomForestClassifier(random_state=MODEL_RANDOM_STATE)
-grid_multi = GridSearchCV(rf_multi, param_grid_multi, cv=3, scoring="f1_macro")
+grid_multi = GridSearchCV(rf_multi, RANDOM_FOREST_PARAM_GRID, cv=3, scoring="f1_macro")
 grid_multi.fit(X_train_var_multi , train_y_multi)
 
 print("Best parameters:", grid_multi.best_params_)
@@ -250,26 +270,19 @@ print("Best CV score:", grid_multi.best_score_)
 
 
 # Tune random forest hyperparameters for the binary model.
-param_grid_binary = {
-    "n_estimators": [100, 300],
-    "max_depth": [None, 20, 50, 100],
-    "max_features": ["sqrt"],
-    "min_samples_leaf": [1,2,5, 10]
-}
-
 rf_binary = RandomForestClassifier(random_state=MODEL_RANDOM_STATE)
-grid_binary = GridSearchCV(rf_binary, param_grid_binary, cv=3, scoring="f1_macro")
+grid_binary = GridSearchCV(rf_binary, RANDOM_FOREST_PARAM_GRID, cv=3, scoring="f1_macro")
 grid_binary.fit(X_train_var_binary , train_y_binary)
 
 print("Best parameters:", grid_binary.best_params_)
 print("Best CV score:", grid_binary.best_score_)
 
-rf_multi_final = RandomForestClassifier(n_estimators=300, bootstrap=True, min_samples_leaf= 2, max_depth=None, max_features='sqrt', criterion='gini', random_state=MODEL_RANDOM_STATE)
+rf_multi_final = RandomForestClassifier(**FINAL_MULTICLASS_PARAMS)
 rf_multi_final.fit(X_train_var_multi , train_y_multi)
 
 
 
-rf_binary_final = RandomForestClassifier(n_estimators=100, bootstrap=True, max_depth=None, max_features='sqrt', min_samples_leaf=10, criterion='gini', random_state=MODEL_RANDOM_STATE)
+rf_binary_final = RandomForestClassifier(**FINAL_BINARY_PARAMS)
 rf_binary_final.fit(X_train_var_binary , train_y_binary)
 
 # Evaluate the final multiclass model on the test set.
