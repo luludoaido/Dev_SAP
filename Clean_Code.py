@@ -92,6 +92,28 @@ def plot_correlation_heatmap(X, title):
     plt.title(title)
     plt.show()
 
+def filter_non_expressed_features(train_X, test_X):
+    min_samples = int(MIN_NON_ZERO_FRACTION * train_X.shape[0])
+    expressed_features = (train_X > 0).sum(axis=0) >= min_samples
+
+    return train_X.loc[:, expressed_features], test_X.loc[:, expressed_features]
+
+
+def apply_variance_filter(train_X, test_X):
+    variance_filter = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
+    variance_filter.fit(train_X)
+
+    selected_features = train_X.columns[variance_filter.get_support()]
+
+    return train_X[selected_features], test_X[selected_features]
+
+
+def select_features(train_X, test_X):
+    train_X, test_X = filter_non_expressed_features(train_X, test_X)
+    train_X, test_X = apply_variance_filter(train_X, test_X)
+
+    return train_X, test_X
+
 expression_df = pd.read_csv(EXPRESSION_FILE, index_col=0)
 
 print("Data shape Gene Expression:", expression_df.shape)
@@ -214,43 +236,16 @@ print("\nTesting to see if the training and test set is balanced (binary):\n (Co
 print("train:", train_y_binary.value_counts(normalize=True) * 100)
 print("\ntest:", test_y_binary.value_counts(normalize=True) * 100)
 
-# Keep genes expressed in at least the configured minimum fraction of training samples for the multiclass model.
-min_expressed_samples_multi = int(MIN_NON_ZERO_FRACTION *train_X_multi.shape[0])
+# Select features separately for the multiclass and binary models.
+X_train_var_multi, X_test_var_multi = select_features(
+    train_X_multi,
+    test_X_multi,
+)
 
-
-expressed_genes_mask_multi = (train_X_multi > 0).sum(axis=0) >= min_expressed_samples_multi
-
-
-X_train_multi_filt = train_X_multi.loc[:, expressed_genes_mask_multi]
-X_test_multi_filt = test_X_multi.loc[:, expressed_genes_mask_multi]
-
-# Keep genes expressed in at least the configured minimum fraction of training samples for the binary model.
-min_expressed_samples_binary = int(MIN_NON_ZERO_FRACTION *train_X_binary.shape[0])
-
-
-expressed_genes_mask_binary = (train_X_binary > 0).sum(axis=0) >= min_expressed_samples_binary
-
-
-X_train_binary_filt = train_X_binary.loc[:, expressed_genes_mask_binary]
-X_test_binary_filt = test_X_binary.loc[:, expressed_genes_mask_binary]
-
-
-vt_multi = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
-vt_multi.fit(X_train_multi_filt)
-
-selected_genes_multi = X_train_multi_filt.columns[vt_multi.get_support()]
-
-X_train_var_multi = X_train_multi_filt[selected_genes_multi]
-X_test_var_multi  = X_test_multi_filt[selected_genes_multi]
-
-
-vt_binary = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
-vt_binary.fit(X_train_binary_filt)
-
-selected_genes_binary = X_train_binary_filt.columns[vt_binary.get_support()]
-
-X_train_var_binary = X_train_binary_filt[selected_genes_binary]
-X_test_var_binary  = X_test_binary_filt[selected_genes_binary]
+X_train_var_binary, X_test_var_binary = select_features(
+    train_X_binary,
+    test_X_binary,
+)
 
 print(X_train_var_multi.shape[1],
 X_test_var_multi.shape[1],
