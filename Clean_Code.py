@@ -57,6 +57,41 @@ FINAL_BINARY_PARAMS = {
     "random_state": MODEL_RANDOM_STATE,
 }
 
+
+
+def plot_class_distribution(y, title, x_label):
+    plt.figure()
+    sns.countplot(x=y)
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel("Number of samples")
+    plt.show()
+
+
+def plot_pca(X, y, title):
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    pca = PCA(n_components=2)
+    X_pca = pca.fit_transform(X_scaled)
+
+    plt.figure()
+    sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=y)
+    plt.title(title)
+    plt.xlabel("PC1")
+    plt.ylabel("PC2")
+    plt.show()
+
+
+def plot_correlation_heatmap(X, title):
+    top_features = X.var().sort_values(ascending=False).head(TOP_FEATURE_COUNT).index
+    correlation_matrix = X[top_features].corr()
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(correlation_matrix, cmap="coolwarm")
+    plt.title(title)
+    plt.show()
+
 expression_df = pd.read_csv(EXPRESSION_FILE, index_col=0)
 
 print("Data shape Gene Expression:", expression_df.shape)
@@ -124,75 +159,39 @@ print(X_binary.dtypes.unique())
 
 # Plot class distributions for both target definitions.
 
-plt.Figure()
-sns.countplot(x= y_multi)
-plt.title("Class Distribution (CMS multiclass)")
-plt.xlabel("CMS class")
-plt.ylabel("Number of samples")
-plt.show()
+plot_class_distribution(
+    y_multi,
+    title="Class Distribution (CMS multiclass)",
+    x_label="CMS class",
+)
 
 
 
-plt.Figure()
-sns.countplot(x= y_binary)
-plt.title("Class Distribution (Binary)")
-plt.xlabel("Class")
-plt.ylabel("Number of samples")
-plt.show()
+plot_class_distribution(
+    y_binary,
+    title="Class Distribution (Binary)",
+    x_label="Class",
+)
 
 # Visualize the first two PCA components for the multiclass target.
 
-scaler = StandardScaler()
-X_scaled_multi = scaler.fit_transform(X_multi)
-
-pca = PCA(n_components=2)
-X_pca_multi = pca.fit_transform(X_scaled_multi)
-
-plt.figure()
-sns.scatterplot(x = X_pca_multi[:,0], y= X_pca_multi[:,1], hue = y_multi)
-plt.title("PCA - CMS classes (Multi class)")
-plt.xlabel("PC1")
-plt.ylabel("PC2")
-plt.show()
+plot_pca(X_multi, y_multi, title="PCA - CMS classes (Multi class)")
 
 # Visualize the first two PCA components for the binary target.
 
-scaler = StandardScaler()
-X_scaled_binary = scaler.fit_transform(X_binary)
-
-pca = PCA(n_components=2)
-X_pca_binary = pca.fit_transform(X_scaled_binary)
-
-plt.figure()
-sns.scatterplot(x = X_pca_binary[:,0], y= X_pca_binary[:,1], hue = y_binary)
-plt.title("PCA - CMS classes (binary)")
-plt.xlabel("PC1")
-plt.ylabel("PC2")
-plt.show()
+plot_pca(X_binary, y_binary, title="PCA - CMS classes (binary)")
 
 # Plot correlations among the highest-variance features for the multiclass target.
-feature_variances_multi = X_multi.var()
-top_variance_features_multi = feature_variances_multi.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
-top_feature_names_multi = top_variance_features_multi.index
-
-
-plt.Figure(figsize=(10,8))
-corr_multi = X_multi[top_feature_names_multi].corr()
-sns.heatmap(corr_multi, cmap = "coolwarm")
-plt.title("Correlation heatmap (top Features - Multi Class)")
-plt.show()
+plot_correlation_heatmap(
+    X_multi,
+    title="Correlation heatmap (top Features - Multi Class)",
+)
 
 # Plot correlations among the highest-variance features for the binary target.
-feature_variances_binary = X_binary.var()
-top_variance_features_binary = feature_variances_binary.sort_values(ascending=False).head(TOP_FEATURE_COUNT)
-top_feature_names_binary = top_variance_features_binary.index
-
-
-plt.Figure(figsize=(10,8))
-corr_binary = X_binary[top_feature_names_binary].corr()
-sns.heatmap(corr_binary, cmap = "coolwarm")
-plt.title("Correlation heatmap (top Features - Binary)")
-plt.show()
+plot_correlation_heatmap(
+    X_binary,
+    title="Correlation heatmap (top Features - Binary)",
+)
 
 
 train_X_multi, test_X_multi, train_y_multi, test_y_multi = train_test_split(X_multi, y_multi, train_size= TRAIN_SIZE, random_state=TRAIN_TEST_RANDOM_STATE)
