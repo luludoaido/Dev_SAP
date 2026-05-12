@@ -27,3 +27,6 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/luludoaido/Dev_SAP"
+
+[tool.setuptools.packages.find]
+where = ["src"]
