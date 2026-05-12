@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RF-models-DSAP"
+version = "0.1.0"
+description = "Random Forest models for cancer subtype classification (TCGA-STAD)"
+readme = "README.md"
+authors = [
+  { name = "luludoaido", email = "deine@email.ch" }
+]
+requires-python = ">=3.10"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+license = "MIT"
+dependencies = [
+  "pandas",
+  "scikit-learn",
+  "matplotlib",
+  "seaborn",
+  "joblib",
+  "numpy",
+]
+
+[project.urls]
+Homepage = "https://github.com/luludoaido/Dev_SAP"
