@@ -10,15 +10,16 @@ Critical work included restructuring the repository, adding this README, refacto
 ## Repository Structure
 The repository layout is as follows:
 ```text
-.github/workflow/       CI/CD GitHub Actions workflows
-data/                   TCGA-STAD datasets and subtype annotations
-snapshot/               archived snapshots of the original project state
-tests/                  pytest-based testing scripts
-Clean_Code.py           cleaned and refactored analysis pipeline
-requirements-dev.txt    development dependencies
-README.md               project overview and usage instructions
-CONTRIBUTING.md         contribution and workflow guidelines
-.gitignore              ignored system and environment-specific files
+.github/workflows/         CI/CD GitHub Actions workflows
+data/                      TCGA-STAD datasets and subtype annotations
+profiling/                 profiling outputs and flamegraph visualisations
+snapshot/                  archived snapshots of the original project state
+src/RF_models_DSAP/        modularized Random Forest analysis package
+tests/                     pytest-based testing scripts
+requirements-dev.txt       development dependencies
+README.md                  project overview and usage instructions
+CONTRIBUTING.md            contribution and workflow guidelines
+.gitignore                 ignored system and environment-specific files
 ```
 
 ## CI/CD Pipeline
