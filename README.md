@@ -51,11 +51,16 @@ Run the main analysis script:
 ```bash
 python Clean_Code.py
 ```
+
 ## Profiling and Optimisation
+Code profiling and flamegraph analysis were performed using Python’s `cProfile` module together with `pstats` and `py-spy` visualisation tools in order to identify computational bottlenecks within the Random Forest classification pipeline.
 
-Code profiling and flamegraph analysis were performed using Python's cProfile module together with SnakeViz visualization tools in order to identify computational bottlenecks within the machine learning pipeline.
+The profiling results showed that most runtime was spent during `GridSearchCV` hyperparameter optimisation and Random Forest training, particularly during repeated decision-tree fitting and cross-validation procedures on high-dimensional gene-expression data.
 
-The profiling results showed that the main runtime bottlenecks originated from Random Forest training, GridSearchCV hyperparameter optimisation, and repeated validation procedures on high-dimensional gene expression data.
+The flamegraph below illustrates the runtime distribution of the workflow and highlights the functions consuming the largest proportion of execution time.
+
+<img width="945" height="309" alt="grafik" src="https://github.com/user-attachments/assets/74136a8c-9d0e-4f91-b711-03fe7f8db4f2" />
+
 
 ## Data
 The repository contains TCGA-STAD gene expression data together with molecular subtype and clinical annotation files used for Random Forest classification analysis.
