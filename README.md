@@ -19,6 +19,23 @@ CONTRIBUTING.md    contribution and workflow guidelines
 .gitignore         ignored system and environment-specific files
 ```
 
+## CI/CD Pipeline
+The repository includes a basic CI/CD workflow implemented with GitHub Actions.
+
+Continuous Integration (CI) is used to automatically validate code quality through:
+- pytest test execution
+- ruff linting
+- black formatting checks
+- coverage analysis with pytest-cov
+
+Continuous Delivery (CD) extends the workflow by:
+- automatically training Random Forest models
+- storing trained models as GitHub Artifacts
+- publishing the package to TestPyPI
+- building executables for Linux, macOS, and Windows
+
+The workflows are executed automatically on pushes and pull requests to feature, develop, and main branches.
+
 ## Running the Analysis
 Clone the repository:
 ```bash
