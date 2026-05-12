@@ -5,20 +5,20 @@ Stomach adenocarcinoma (STAD) is a biologically heterogeneous cancer with multip
 The repository started in an unstructured state: a single main branch, no README, poorly described commits, and all code contained in one Jupyter Notebook. The main issues were a complete lack of modularisation, excessive and inconsistent commenting (including mixed English/German), and unclear naming conventions that became increasingly cryptic over time.
 
 ## Refactoring Priorities
-Critical work included restructuring the repository, adding this README, converting the Notebook to modular Python scripts, cleaning up comments and replacing them with docstrings, standardizing naming, and introducing basic tests. Full test coverage and CI/CD were considered important but out of scope. Interactive visualizations and extended benchmarking were noted as optional stretch goals.
+Critical work included restructuring the repository, adding this README, refactoring the original notebook workflow into modular Python components for preprocessing, training, visualisation, configuration management, and evaluation, standardizing naming conventions, cleaning up comments and replacing them with docstrings, and introducing basic tests.
 
 ## Repository Structure
 The repository layout is as follows:
 ```text
-.github/workflow/    CI/CD GitHub Actions workflows
-data/              TCGA-STAD datasets and subtype annotations
-snapshot/          archived snapshots of the original project state
-tests/             pytest-based testing scripts
-Clean_Code.py      cleaned and refactored analysis pipeline
-requirements-dev.txt development dependencies
-README.md          project overview and usage instructions
-CONTRIBUTING.md    contribution and workflow guidelines
-.gitignore         ignored system and environment-specific files
+.github/workflow/       CI/CD GitHub Actions workflows
+data/                   TCGA-STAD datasets and subtype annotations
+snapshot/               archived snapshots of the original project state
+tests/                  pytest-based testing scripts
+Clean_Code.py           cleaned and refactored analysis pipeline
+requirements-dev.txt    development dependencies
+README.md               project overview and usage instructions
+CONTRIBUTING.md         contribution and workflow guidelines
+.gitignore              ignored system and environment-specific files
 ```
 
 ## CI/CD Pipeline
@@ -51,11 +51,15 @@ Run the main analysis script:
 ```bash
 python Clean_Code.py
 ```
+## Profiling and Optimisation
+
+Code profiling and flamegraph analysis were performed using Python's cProfile module together with SnakeViz visualization tools in order to identify computational bottlenecks within the machine learning pipeline.
+
+The profiling results showed that the main runtime bottlenecks originated from Random Forest training, GridSearchCV hyperparameter optimisation, and repeated validation procedures on high-dimensional gene expression data.
 
 ## Data
 The repository contains TCGA-STAD gene expression data together with molecular subtype and clinical annotation files used for Random Forest classification analysis.
-
-Included dataset files:
+Included dataset files (located in the `data/` directory):
 - TCGA-STAD_gene_expression_cpm.csv
 - TCGA-STAD clinical data.csv
 - TCGA-STAD subtype data.csv
