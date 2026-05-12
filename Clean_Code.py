@@ -17,9 +17,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-BASE_DIR = Path(
-    "/Users/luanadoaido/ZHAW/HS25/Track1/Mini Project/Track/Trackmodule_1_RF_TCGA-STAD"
-)
+BASE_DIR = Path(".")
 EXPRESSION_FILE = BASE_DIR / "data" / "TCGA-STAD_gene_expression_cpm.csv"
 SUBTYPE_FILE = BASE_DIR / "TCGA-STAD_subtypes.csv"
 
