@@ -68,9 +68,7 @@ def load_selected_project_code(source_file: Path):
     for node in tree.body:
         if isinstance(node, ast.Assign):
             assigned_names = {
-                target.id
-                for target in node.targets
-                if isinstance(target, ast.Name)
+                target.id for target in node.targets if isinstance(target, ast.Name)
             }
 
             if assigned_names & CONSTANTS_TO_LOAD:
