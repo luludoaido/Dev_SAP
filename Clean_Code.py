@@ -16,6 +16,9 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 
+import joblib
+import os
+
 
 BASE_DIR = Path(".")
 EXPRESSION_FILE = BASE_DIR / "data" / "TCGA-STAD_gene_expression_cpm.csv"
@@ -443,3 +446,13 @@ for i, (imp, feat) in enumerate(
 
 plt.tight_layout()
 plt.show()
+
+
+# Save trained models as .pkl files for later use (e.g. inference,
+# deployment). The models/ directory is created if it doesn't exist.
+os.makedirs("models", exist_ok=True)
+
+joblib.dump(rf_multi_final, "models/model_binary.pkl")
+joblib.dump(rf_multi_final, "models/model_multi.pkl")
+print("Modelle gespeichert!")
+
