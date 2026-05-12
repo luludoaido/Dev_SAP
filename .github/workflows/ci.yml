@@ -75,3 +75,29 @@ jobs:
           name: trained-model
           path: models/
           retention-days: 30
+
+
+  publish:
+      needs: train
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: "3.10"
+
+        - name: Install build tools
+          run: pip install build twine
+
+        - name: Build package
+          run: python -m build
+
+        - name: Publish to TestPyPI
+          env:
+            TWINE_USERNAME: __token__
+            TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          run: |
+            python -m twine upload --repository testpypi dist/*
