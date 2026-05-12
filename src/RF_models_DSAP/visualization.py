@@ -102,7 +102,9 @@ def plot_roc_curve(model, X_test, y_test, pos_label="MSI"):
     print("ROC-AUC Value:", roc_auc)
 
     plt.figure(figsize=(8, 6))
-    plt.plot(fpr, tpr, color="darkgreen", lw=2, label=f"ROC Curve (AUC = {roc_auc:.2f})")
+    plt.plot(
+        fpr, tpr, color="darkgreen", lw=2, label=f"ROC Curve (AUC = {roc_auc:.2f})"
+    )
     plt.plot([0, 1], [0, 1], color="gray", lw=1, linestyle="--")
     plt.xlabel("False Positive Rate")
     plt.ylabel("True Positive Rate")

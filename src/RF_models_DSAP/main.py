@@ -37,7 +37,9 @@ def main():
     plot_class_distribution(y_binary, "Class Distribution (Binary)", "Class")
     plot_pca(X_multi, y_multi, "PCA - CMS classes (Multi class)")
     plot_pca(X_binary, y_binary, "PCA - CMS classes (binary)")
-    plot_correlation_heatmap(X_multi, "Correlation heatmap (top Features - Multi Class)")
+    plot_correlation_heatmap(
+        X_multi, "Correlation heatmap (top Features - Multi Class)"
+    )
     plot_correlation_heatmap(X_binary, "Correlation heatmap (top Features - Binary)")
 
     # ── Train/test split ───────────────────────────────────────────
@@ -68,12 +70,10 @@ def main():
 
     # ── Visualize results ──────────────────────────────────────────
     plot_confusion_matrix(
-        rf_multi_final, test_y_multi, y_pred_multi,
-        "Confusion Matrix - Multi Class"
+        rf_multi_final, test_y_multi, y_pred_multi, "Confusion Matrix - Multi Class"
     )
     plot_confusion_matrix(
-        rf_binary_final, test_y_binary, y_pred_binary,
-        "Confusion Matrix - Binary"
+        rf_binary_final, test_y_binary, y_pred_binary, "Confusion Matrix - Binary"
     )
     plot_feature_importance(rf_multi_final, X_test_var_multi, "Top 10 Features (Multi)")
     plot_feature_importance(
