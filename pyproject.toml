@@ -30,3 +30,8 @@ Homepage = "https://github.com/luludoaido/Dev_SAP"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+exclude = [
+    "snapshot/",
+]
