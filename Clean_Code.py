@@ -16,12 +16,13 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 
+import joblib
+import os
 
-BASE_DIR = Path(
-    "/Users/luanadoaido/ZHAW/HS25/Track1/Mini Project/Track/Trackmodule_1_RF_TCGA-STAD"
-)
+
+BASE_DIR = Path(".")
 EXPRESSION_FILE = BASE_DIR / "data" / "TCGA-STAD_gene_expression_cpm.csv"
-SUBTYPE_FILE = BASE_DIR / "TCGA-STAD_subtypes.csv"
+SUBTYPE_FILE = BASE_DIR / "data" / "TCGA-STAD_subtypes.csv"
 
 
 TRAIN_SIZE = 0.7
@@ -123,11 +124,11 @@ def select_features(train_X, test_X):
     return train_X, test_X
 
 
-expression_df = pd.read_csv(EXPRESSION_FILE, index_col=0)
+expression_df = pd.read_csv(EXPRESSION_FILE)
 
 print("Data shape Gene Expression:", expression_df.shape)
 
-subtype_df = pd.read_csv(SUBTYPE_FILE, index_col=0)
+subtype_df = pd.read_csv(SUBTYPE_FILE)
 
 print("Data shape Subtypes:", subtype_df.shape)
 
@@ -441,3 +442,12 @@ for i, (imp, feat) in enumerate(zip(top10_binary["importance"], top10_binary["fe
 
 plt.tight_layout()
 plt.show()
+
+
+# making a folder if it doesn't exist
+os.makedirs("models", exist_ok=TRUE)
+
+# downloading the model
+joblib.dump(rf_multi_final, "models/model_multi.pkl")
+joblib.dump(rf_binary_final, models/model_binary.pkl)
+print("Modelle gespeichert")
