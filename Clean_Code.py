@@ -19,7 +19,7 @@ from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = Path(".")
 EXPRESSION_FILE = BASE_DIR / "data" / "TCGA-STAD_gene_expression_cpm.csv"
-SUBTYPE_FILE = BASE_DIR / "TCGA-STAD_subtypes.csv"
+SUBTYPE_FILE = BASE_DIR / "data" / "TCGA-STAD_subtypes.csv"
 
 
 TRAIN_SIZE = 0.7
