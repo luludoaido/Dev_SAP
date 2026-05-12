@@ -455,4 +455,3 @@ os.makedirs("models", exist_ok=True)
 joblib.dump(rf_multi_final, "models/model_binary.pkl")
 joblib.dump(rf_multi_final, "models/model_multi.pkl")
 print("Modelle gespeichert!")
-
