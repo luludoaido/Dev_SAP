@@ -16,6 +16,9 @@ from sklearn.metrics import (
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.preprocessing import StandardScaler
 
+import joblib
+import os
+
 
 BASE_DIR = Path(
     "/Users/luanadoaido/ZHAW/HS25/Track1/Mini Project/Track/Trackmodule_1_RF_TCGA-STAD"
@@ -441,3 +444,12 @@ for i, (imp, feat) in enumerate(zip(top10_binary["importance"], top10_binary["fe
 
 plt.tight_layout()
 plt.show()
+
+
+# making a folder if it doesn't exist
+os.makedirs("models", exist_ok=TRUE)
+
+# downloading the model
+joblib.dump(rf_multi_final, "models/model_multi.pkl")
+joblib.dump(rf_binary_final, models/model_binary.pkl)
+print("Modelle gespeichert")
