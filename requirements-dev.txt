@@ -4,6 +4,7 @@ black==24.10.0
 ruff
 coverage
 matplotlib
-numpy
 pandas
+seaborn
 scikit-learn
+numpy 
