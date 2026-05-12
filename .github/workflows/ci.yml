@@ -67,7 +67,7 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Train model
-        run: python Clean_Code.py
+        run: python -m RF_models_DSAP.main
 
       - name: Save model as artifact
         uses: actions/upload-artifact@v4
@@ -91,6 +91,11 @@ jobs:
 
         - name: Install build tools
           run: pip install build twine
+
+        - name: Set version
+          run: |
+            SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+            sed -i "s/version = .*/version = "0.1.0.dev$SHORT_SHA\"/" pyproject.toml
 
         - name: Build package
           run: python -m build
