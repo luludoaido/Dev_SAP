@@ -116,11 +116,11 @@ def select_features(train_X, test_X):
     return train_X, test_X
 
 
-expression_df = pd.read_csv(EXPRESSION_FILE, index_col=0)
+expression_df = pd.read_csv(EXPRESSION_FILE)
 
 print("Data shape Gene Expression:", expression_df.shape)
 
-subtype_df = pd.read_csv(SUBTYPE_FILE, index_col=0)
+subtype_df = pd.read_csv(SUBTYPE_FILE)
 
 print("Data shape Subtypes:", subtype_df.shape)
 
