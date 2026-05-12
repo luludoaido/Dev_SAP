@@ -59,7 +59,7 @@ The profiling results showed that most runtime was spent during `GridSearchCV` h
 
 The flamegraph below illustrates the runtime distribution of the workflow and highlights the functions consuming the largest proportion of execution time.
 
-<img width="945" height="309" alt="grafik" src="https://github.com/user-attachments/assets/74136a8c-9d0e-4f91-b711-03fe7f8db4f2" />
+![Flamegraph](profiling/flamegraph.svg)
 
 
 ## Data
