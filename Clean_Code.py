@@ -87,12 +87,7 @@ def plot_pca(X, y, title):
 
 
 def plot_correlation_heatmap(X, title):
-    top_features = (
-        X.var()
-        .sort_values(ascending=False)
-        .head(TOP_FEATURE_COUNT)
-        .index
-    )
+    top_features = X.var().sort_values(ascending=False).head(TOP_FEATURE_COUNT).index
     correlation_matrix = X[top_features].corr()
 
     plt.figure(figsize=(10, 8))
@@ -147,7 +142,10 @@ cancer_df = pd.merge(subtype_df, expression_df, on="submitter_id", how="inner")
 
 print("Data shape whole DF:", cancer_df.shape)
 print("\nThere are", cancer_df.isna().sum().sum(), "Na's in the Dataframe.")
-print("\nIn which features are the Na's present?\n", cancer_df.isna().sum().sort_values(ascending=False).head())
+print(
+    "\nIn which features are the Na's present?\n",
+    cancer_df.isna().sum().sort_values(ascending=False).head(),
+)
 print("\nThere are", cancer_df.index.duplicated().sum(), "duplicated rows.")
 print("\nThere are", cancer_df.columns.duplicated().sum(), "duplicated Columns.")
 
@@ -235,14 +233,18 @@ train_X_binary, test_X_binary, train_y_binary, test_y_binary = train_test_split(
 # Compare class proportions in train and test splits.
 train_y_multi = pd.Series(train_y_multi)
 test_y_multi = pd.Series(test_y_multi)
-print("\nTesting to see if the training and test set is balanced (multi):\n (Count in %)")
+print(
+    "\nTesting to see if the training and test set is balanced (multi):\n (Count in %)"
+)
 print("train:", train_y_multi.value_counts(normalize=True) * 100)
 print("\ntest:", test_y_multi.value_counts(normalize=True) * 100)
 
 
 train_y_binary = pd.Series(train_y_binary)
 test_y_binary = pd.Series(test_y_binary)
-print("\nTesting to see if the training and test set is balanced (binary):\n (Count in %)")
+print(
+    "\nTesting to see if the training and test set is balanced (binary):\n (Count in %)"
+)
 print("train:", train_y_binary.value_counts(normalize=True) * 100)
 print("\ntest:", test_y_binary.value_counts(normalize=True) * 100)
 
@@ -431,7 +433,9 @@ plt.title("Top 10 Feature Importances (Binary)")
 plt.xlabel("Importance")
 plt.ylabel("Gene Expression")
 
-for i, (imp, feat) in enumerate(zip(top10_binary["importance"], top10_binary["feature"])):
+for i, (imp, feat) in enumerate(
+    zip(top10_binary["importance"], top10_binary["feature"])
+):
     plt.text(
         imp - 0.0002 * max(top10_binary["importance"]),
         i,
@@ -444,10 +448,10 @@ plt.tight_layout()
 plt.show()
 
 
-# making a folder if it doesn't exist
-os.makedirs("models", exist_ok=TRUE)
+# Save trained models as .pkl files for later use (e.g. inference,
+# deployment). The models/ directory is created if it doesn't exist.
+os.makedirs("models", exist_ok=True)
 
-# downloading the model
+joblib.dump(rf_multi_final, "models/model_binary.pkl")
 joblib.dump(rf_multi_final, "models/model_multi.pkl")
-joblib.dump(rf_binary_final, models/model_binary.pkl)
-print("Modelle gespeichert")
+print("Modelle gespeichert!")
