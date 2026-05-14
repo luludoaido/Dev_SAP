@@ -1,3 +1,15 @@
+"""
+Clean_Code.py
+
+End-to-end pipeline for training Random Forest classifiers on TCGA-STAD
+gene expression data. Includes data loading, preprocessing, feature
+selection, hyperparameter tuning, model evaluation and model saving.
+
+Two classification tasks are covered:
+- Multiclass: CMS molecular subtype classification
+- Binary: MSI phenotype classification (MSI vs. MSS)
+"""
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -72,6 +84,19 @@ def plot_class_distribution(y, title, x_label):
 
 
 def plot_pca(X, y, title):
+    """Plot the first two PCA components colored by class label.
+
+    Standardizes the features before applying PCA to ensure
+    all features contribute equally to the decomposition.
+
+    Args:
+        X (pd.DataFrame): Feature matrix.
+        y (pd.Series): Target labels used for coloring the scatter plot.
+        title (str): Title of the plot.
+
+    Returns:
+        None
+    """
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
@@ -87,6 +112,18 @@ def plot_pca(X, y, title):
 
 
 def plot_correlation_heatmap(X, title):
+    """Plot a correlation heatmap of the top high-variance features.
+
+    Selects the top features by variance and computes pairwise
+    Pearson correlations between them.
+
+    Args:
+        X (pd.DataFrame): Feature matrix.
+        title (str): Title of the heatmap.
+
+    Returns:
+        None
+    """
     top_features = X.var().sort_values(ascending=False).head(TOP_FEATURE_COUNT).index
     correlation_matrix = X[top_features].corr()
 
@@ -97,6 +134,20 @@ def plot_correlation_heatmap(X, title):
 
 
 def filter_non_expressed_features(train_X, test_X):
+    """Remove features that are zero in too many samples.
+
+    A feature is kept only if it has non-zero expression in at least
+    MIN_NON_ZERO_FRACTION of the training samples. The filter is fit
+    on training data only to prevent data leakage.
+
+    Args:
+        train_X (pd.DataFrame): Training feature matrix.
+        test_X (pd.DataFrame): Test feature matrix.
+
+    Returns:
+        tuple: Filtered (train_X, test_X) DataFrames with low-expression
+            features removed.
+    """
     min_samples = int(MIN_NON_ZERO_FRACTION * train_X.shape[0])
     expressed_features = (train_X > 0).sum(axis=0) >= min_samples
 
@@ -104,6 +155,19 @@ def filter_non_expressed_features(train_X, test_X):
 
 
 def apply_variance_filter(train_X, test_X):
+    """Remove low-variance features using a variance threshold.
+
+    Features with variance below VARIANCE_THRESHOLD are dropped.
+    The filter is fit on training data only to prevent data leakage.
+
+    Args:
+        train_X (pd.DataFrame): Training feature matrix.
+        test_X (pd.DataFrame): Test feature matrix.
+
+    Returns:
+        tuple: Filtered (train_X, test_X) DataFrames with low-variance
+            features removed.
+    """
     variance_filter = VarianceThreshold(threshold=VARIANCE_THRESHOLD)
     variance_filter.fit(train_X)
 
@@ -113,6 +177,19 @@ def apply_variance_filter(train_X, test_X):
 
 
 def select_features(train_X, test_X):
+    """Apply all feature selection steps to training and test data.
+
+    Sequentially applies non-expression filtering and variance
+    filtering. All filters are fit on training data only to
+    prevent data leakage.
+
+    Args:
+        train_X (pd.DataFrame): Training feature matrix.
+        test_X (pd.DataFrame): Test feature matrix.
+
+    Returns:
+        tuple: Filtered (train_X, test_X) DataFrames.
+    """
     train_X, test_X = filter_non_expressed_features(train_X, test_X)
     train_X, test_X = apply_variance_filter(train_X, test_X)
 

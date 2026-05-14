@@ -1,24 +1,32 @@
+"""
+config.py
+
+Central configuration file for the RF_models_DSAP pipeline.
+Contains all constants for file paths, train/test split, model
+parameters, feature selection and hyperparameter tuning.
+"""
+
 from pathlib import Path
 
-# ── File Paths ─────────────────────────────────────────────────────
+# File Paths
 BASE_DIR = Path(".")
 EXPRESSION_FILE = BASE_DIR / "data" / "TCGA-STAD_gene_expression_cpm.csv"
 SUBTYPE_FILE = BASE_DIR / "data" / "TCGA-STAD_subtypes.csv"
 
-# ── Train/Test Split ───────────────────────────────────────────────
+# Train/Test Split 
 TRAIN_SIZE = 0.7
 TRAIN_TEST_RANDOM_STATE = 1
 
-# ── Model ──────────────────────────────────────────────────────────
+
 MODEL_RANDOM_STATE = 42
 
-# ── Feature Selection ──────────────────────────────────────────────
+# Feature Selection Arguments
 MIN_NON_ZERO_FRACTION = 0.1
 VARIANCE_THRESHOLD = 0.01
 TOP_FEATURE_COUNT = 20
 TOP_IMPORTANCE_COUNT = 10
 
-# ── Hyperparameter Grid ────────────────────────────────────────────
+# Hyperparameter Grid 
 RANDOM_FOREST_PARAM_GRID = {
     "n_estimators": [100, 300],
     "max_depth": [None, 20, 50, 100],
@@ -26,7 +34,7 @@ RANDOM_FOREST_PARAM_GRID = {
     "min_samples_leaf": [1, 2, 5, 10],
 }
 
-# ── Final Model Parameters ─────────────────────────────────────────
+# Final Model Parameters 
 FINAL_MULTICLASS_PARAMS = {
     "n_estimators": 300,
     "bootstrap": True,

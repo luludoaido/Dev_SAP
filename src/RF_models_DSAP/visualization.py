@@ -1,3 +1,12 @@
+"""
+visualization.py
+
+Visualization functions for the RF_models_DSAP pipeline.
+Provides plots for exploratory data analysis (class distribution,
+PCA, correlation heatmap) and model evaluation (confusion matrix,
+feature importance, ROC curve).
+"""
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -9,7 +18,16 @@ from .config import TOP_FEATURE_COUNT, TOP_IMPORTANCE_COUNT
 
 
 def plot_class_distribution(y, title, x_label):
-    """Plot the distribution of class labels."""
+    """Plot the distribution of class labels.
+    
+    Args:
+        y (pd.Series): Target labels to plot.
+        title (str): Title of the plot.
+        x_label (str): Label for the x-axis.
+
+    Returns:
+        None
+    """
     plt.figure()
     sns.countplot(x=y)
     plt.title(title)
@@ -19,7 +37,19 @@ def plot_class_distribution(y, title, x_label):
 
 
 def plot_pca(X, y, title):
-    """Plot the first two PCA components colored by class label."""
+    """Plot the first two PCA components colored by class label.
+    
+    Standardizes the features before applying PCA to ensure
+    all features contribute equally to the decomposition.
+
+    Args:
+        X (pd.DataFrame): Feature matrix.
+        y (pd.Series): Target labels used for coloring the scatter plot.
+        title (str): Title of the plot.
+
+    Returns:
+        None
+    """
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
@@ -35,7 +65,17 @@ def plot_pca(X, y, title):
 
 
 def plot_correlation_heatmap(X, title):
-    """Plot a correlation heatmap of the top high-variance features."""
+    """Plot a correlation heatmap of the top high-variance features.
+    Selects the top features by variance and computes pairwise
+    Pearson correlations between them.
+
+    Args:
+        X (pd.DataFrame): Feature matrix.
+        title (str): Title of the heatmap.
+
+    Returns:
+        None
+    """
     top_features = X.var().sort_values(ascending=False).head(TOP_FEATURE_COUNT).index
     correlation_matrix = X[top_features].corr()
 
@@ -46,7 +86,17 @@ def plot_correlation_heatmap(X, title):
 
 
 def plot_confusion_matrix(model, y_test, y_pred, title):
-    """Plot a confusion matrix heatmap."""
+    """Plot a confusion matrix heatmap for model evaluation.
+
+    Args:
+        model (RandomForestClassifier): Trained model used to get class labels.
+        y_test (pd.Series): True target labels.
+        y_pred (np.ndarray): Predicted target labels.
+        title (str): Title of the plot.
+
+    Returns:
+        None
+    """
     cm = confusion_matrix(y_test, y_pred)
 
     plt.figure(figsize=(8, 6))
@@ -65,7 +115,16 @@ def plot_confusion_matrix(model, y_test, y_pred, title):
 
 
 def plot_feature_importance(model, X_test, title):
-    """Plot the top feature importances of a trained model."""
+    """Plot the top feature importances of a trained model as a bar chart.
+
+    Args:
+        model (RandomForestClassifier): Trained model with feature_importances_.
+        X_test (pd.DataFrame): Test feature matrix used to get feature names.
+        title (str): Title of the plot.
+
+    Returns:
+        None
+    """
     feature_importance = pd.DataFrame(
         {
             "feature": X_test.columns,
@@ -94,7 +153,17 @@ def plot_feature_importance(model, X_test, title):
 
 
 def plot_roc_curve(model, X_test, y_test, pos_label="MSI"):
-    """Plot the ROC curve and print the AUC score for a binary model."""
+    """Plot the ROC curve and print the AUC score for a binary model.
+    
+    Args:
+        model (RandomForestClassifier): Trained binary classification model.
+        X_test (pd.DataFrame): Test feature matrix.
+        y_test (pd.Series): True binary target labels.
+        pos_label (str): The positive class label. Defaults to "MSI".
+
+    Returns:
+        None
+    """
     test_probabilities = model.predict_proba(X_test)[:, 1]
     fpr, tpr, _ = roc_curve(y_test, test_probabilities, pos_label=pos_label)
     roc_auc = auc(fpr, tpr)
