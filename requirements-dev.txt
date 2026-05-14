@@ -1,0 +1,11 @@
+pytest
+pytest-cov
+black==24.10.0
+ruff
+coverage
+matplotlib
+pandas
+seaborn
+scikit-learn
+numpy 
+joblib
