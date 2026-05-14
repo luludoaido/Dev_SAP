@@ -46,6 +46,7 @@ jobs:
 
   train:
     needs: test
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
