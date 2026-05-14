@@ -11,6 +11,7 @@ on:
       - develop
       - main
       - feature/**
+      - test/main-pipeline
 
 jobs:
   test:
@@ -46,7 +47,7 @@ jobs:
 
   train:
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/main-pipeline')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -81,7 +82,7 @@ jobs:
 
   publish:
       needs: train
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/main-pipeline')
       runs-on: ubuntu-latest
       steps:
         - name: Checkout repository
@@ -112,7 +113,7 @@ jobs:
 
   build-binaries:
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/test/main-pipeline')
 
     strategy:
       matrix:
