@@ -67,8 +67,6 @@ The flamegraph below illustrates the runtime distribution of the workflow and hi
 The repository contains TCGA-STAD gene expression data together with molecular subtype and clinical annotation files used for Random Forest classification analysis.
 Included dataset files (located in the `data/` directory):
 - TCGA-STAD_gene_expression_cpm.csv
-- TCGA-STAD clinical data.csv
-- TCGA-STAD subtype data.csv
 - TCGA-STAD_subtypes.csv
 
 ## Authors
