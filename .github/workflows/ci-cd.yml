@@ -46,7 +46,7 @@ jobs:
 
   train:
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -81,6 +81,7 @@ jobs:
 
   publish:
       needs: train
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       runs-on: ubuntu-latest
       steps:
         - name: Checkout repository
@@ -111,7 +112,8 @@ jobs:
 
   build-binaries:
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
